@@ -6,31 +6,39 @@
 #include "functions.hpp"
 #include "system.hpp"
 
-int main(int argc, char ** argv)
+int main()
 {
-	sf::RenderWindow window(sf::VideoMode(800U, 600U), "PHYSICS");
+	sf::RenderWindow window(sf::VideoMode(800U, 600U), "Gravity Grid");
 
 	sf::Vector2f min_point(  0.0f,   0.0f);
 	sf::Vector2f max_point(775.0f, 575.0f);
 
-	const auto N = 50U;
+	const auto N_length = 4U;
 
-	const auto R = length(max_point - min_point) * 0.1f;
+	const auto N_width = 5U;
 
-	const auto C = (min_point + max_point) * 0.5f;
+	const auto keep_distance = length(max_point - min_point) * 0.1 / N_length;
 
 	const auto r = 2.5f;
 
+	auto start_point = (max_point - min_point) * 0.5;
+
+	auto point = start_point;
+
 	std::vector < System::particle_t > particles;
 
-	for (auto i = 0U; i < N; ++i)
+	for (auto i = 0U; i < N_length * N_width; ++i)
 	{
-		auto angle = 2.0f * 3.141593f / N * i;
+		particles.push_back(std::make_shared < Particle >(point, point, sf::Vector2f(0.0f, 10.0f), r));
 
-		auto position = sf::Vector2f(std::cos(angle), std::sin(angle)) * R + C;
+		if (i != 0 and (i + 1) % N_width == 0)
+		{
+			point.y -= keep_distance;
+			point.x = start_point.x;
+			particles.push_back(std::make_shared < Particle >(point, point, sf::Vector2f(0.0f, 10.0f), r));
+		}
 
-		particles.push_back(std::make_shared < Particle > (position, position,
-			sf::Vector2f(0.0f, 10.0f), r));
+		point.x += keep_distance;
 	}
 
 	System system(min_point, max_point, particles);
